@@ -84,9 +84,9 @@ class Database:
         self.cursor = self.conn.cursor()
         pass
 
-    #get Mentor Info
-    def getMentorInfo(self, data: MentorInfo) -> list:
-        command = "EXEC sp_getMentorInfo '%s'" % (data.mentorID)
+    #get Mentor Info by Rating - display mentor info, sort in descending order of rating
+    def getMentorInfoByRating(self, data: MentorInfo) -> list:
+        command = "EXEC sp_getMentorInfoByRating"
         try:
             self.cursor.execute(command)
         except:
@@ -96,7 +96,7 @@ class Database:
             result.append([x for x in i])
         return result
     
-    #get Field
+    #get Field - display field name and number of mentor in each field, sort in descending order
     def getFeild(self, data: Field) -> list:
         command = "EXEC sp_getFeild " 
         try:
@@ -108,7 +108,7 @@ class Database:
             result.append([x for x in i])
         return result
     
-    #get Mentor by Field
+    #get Mentor by Field - display all the mentor in that field
     def getMentorByFeild(self, data: Field) -> list:
         command = "EXEC sp_getMentorByFeild '%s'" % (data.fieldName)
         try:
@@ -119,6 +119,47 @@ class Database:
         for i in self.cursor:
             result.append([x for x in i])
         return result
+
+    #get search - input: keyword, output: mentor profile containing that keyword
+    def getSearchResult(self, data) -> list:
+        command = "EXEC sp_search '%s'" % (data)
+        try:
+            self.cursor.execute(command)
+        except:
+            return 'SOME ERROR OCCUR'
+        result = []
+        for i in self.cursor:
+            result.append([x for x in i])
+        return result
+    
+    #check Login Information
+    def checkLogin(self, username:str, password:str) -> str:
+        command = 'EXEC sp_checkLogin \''+username+'\', \''+password+'\''
+        try:
+            result = ''
+            self.cursor.execute(command)
+            print("hello")
+            for i in self.cursor:
+                result += i[0]
+        except:
+            return 'SOME ERRORS OCCUR'
+        
+    #sign up
+    def signup(self, account: AccountInfo, user: UserInfo) -> str:
+        command_addaccount = "EXEC sp_AddAccount '%s', '%s', '%s'" % (account.username, account.password)
+        command_adduser = "EXEC sp_AddUser '%s', '%s', '%s', '%s', '%s', '%s', '%b'" % (user.fname, user.lname, user.email, user.phone, user.dob, user.country, user.gender, "Mentee")
+        try:
+            self.cursor.execute(command_addaccount)
+            id = []
+            for i in self.cursor:
+                id.append([e for e in i])
+            self.cursor.execute(command_adduser)
+            self.conn.commit()
+        except:
+            return 'FAIL TO SIGN UP'
+        return 'SUCCESS'
+
+
 '''
     def root(self, data:str) -> list:
         command = 'EXEC findTable \'' + data.lower() + '\''
