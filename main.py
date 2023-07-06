@@ -61,13 +61,10 @@ class UserInfo(BaseModel):
 
 class MentorInfo(BaseModel):
     mentorID: str = '123456'
+    fieldID: str = '123456'
     language: str = 'English'
     description: str = 'Hello'
     rating: float = 1.5
-
-class MentorField(BaseModel):
-    mentorID: str = '123456'
-    fieldID: str = '123456'
 
 class Field(BaseModel):
     fieldID: str = '123456'
@@ -87,13 +84,9 @@ class Database:
         self.cursor = self.conn.cursor()
         pass
 
-    #get data from db
+    #get Mentor Info
     def getMentorInfo(self, data: MentorInfo) -> list:
-        if data.gender:
-            gender = 1
-        else:
-            gender = 0
-        command = "EXEC GetMentorInfo '%s', '%s', %f, %f, '%s', '%s', %d" % (data.animalType, data.detailtype, data.weight, data.height, data.color, data.location, gender)
+        command = "EXEC sp_getMentorInfo '%s'" % (data.mentorID)
         try:
             self.cursor.execute(command)
         except:
@@ -102,7 +95,31 @@ class Database:
         for i in self.cursor:
             result.append([x for x in i])
         return result
-
+    
+    #get Field
+    def getFeild(self, data: Field) -> list:
+        command = "EXEC sp_getFeild " 
+        try:
+            self.cursor.execute(command)
+        except:
+            return 'SOME ERROR OCCUR'
+        result = []
+        for i in self.cursor:
+            result.append([x for x in i])
+        return result
+    
+    #get Mentor by Field
+    def getMentorByFeild(self, data: Field) -> list:
+        command = "EXEC sp_getMentorByFeild '%s'" % (data.fieldName)
+        try:
+            self.cursor.execute(command)
+        except:
+            return 'SOME ERROR OCCUR'
+        result = []
+        for i in self.cursor:
+            result.append([x for x in i])
+        return result
+'''
     def root(self, data:str) -> list:
         command = 'EXEC findTable \'' + data.lower() + '\''
         self.cursor.execute(command)
@@ -111,13 +128,8 @@ class Database:
             result.append([x for x in i])
         return result
 
-    def removeUser(self, userid:str):
-        command = 'EXEC removeUser \'%s\'' % (userid)
-        self.cursor.execute(command)
-        self.conn.commit()
-
     def changeUserInfo(self, user: UserInfo):
-        command = "EXEC changeUserInfo '%s', '%s', '%s', '%s', '%s', '%s', %d, '%s', '%s'" % (user.userid, user.Name, user.usename, user.userPhone, user.userMail, user.userPWD, 1 if user.gender else 0, user.dob, user.userAddress)
+        command = "EXEC changeUserInfo '%s'" % (user.userid, user.Name, user.usename, user.userPhone, user.userMail, user.userPWD, 1 if user.gender else 0, user.dob, user.userAddress)
         try:
             self.cursor.execute(command)
             self.conn.commit()
@@ -126,7 +138,7 @@ class Database:
         return 'SUCCESS'
 
     #sign up
-    def signup(self, user: LoginInfo) -> str:
+    def signup(self, user: AccountInfo) -> str:
         id = user.userID
         command = 'EXEC sp_AddUsers \''+id+'\', \''+user.Name+'\', \''+user.usename+'\',\''+user.userPhone+'\', \''+user.userMail+'\', \''+user.userPWD+'\','+str(user.gender)+', \''+user.dob+'\', \''+user.userAddress+'\''
         try:
@@ -137,8 +149,8 @@ class Database:
         return 'SUCCESS'
 
     def login(self, username:str, password:str) -> str:
-        '''return username'''
-        command = 'EXEC CheckLogIn \''+username+'\', \''+password+'\''
+        #return username
+        command = 'EXEC sp_checkLogIn \''+username+'\', \''+password+'\''
         try:
             result = ''
             self.cursor.execute(command)
@@ -174,6 +186,7 @@ class Database:
             return result
         except:
             return 'NO USER'
+'''
 ###################################################################################################################
 #           MAIN PART   
 ###################################################################################################################
