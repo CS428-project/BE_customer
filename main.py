@@ -1,17 +1,22 @@
 from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
-from google.cloud import firestore
-from pydantic import BaseModel
+from fastapi.responses import JSONResponse
+
+import models
+from database import Database
 
 print("Hello")
 
 image_path = "./image/"
 
-import firebase_admin
-from firebase_admin import credentials
-
-cred = credentials.Certificate("service.json")
-firebase_admin.initialize_app(cred)
+# import firebase_admin
+# from firebase_admin import credentials, firestore
+#
+# cred = credentials.Certificate("service.json")
+# firebase_admin.initialize_app(cred)
+# db = firestore.client()
+# doc_ref = db.collection("users").document("alovelace")
+# doc_ref.set({"first": "Ada", "last": "Lovelace", "born": 1815})
 
 
 #               CONNECTION TO DATABASE
@@ -39,19 +44,19 @@ firebase_admin.initialize_app(cred)
 #         + password
 #         + ";"
 #     )
-#
-#
-# # def database_connection2(server:str='TRONGNHAN', database:str='Plooker'):
-# #     '''
-# #     call this function to connect to database
-# #     this function return pyodbc.connect
-# #     '''
-# #     return pyodbc.connect('DRIVER={SQL Server};\
-# #                             SERVER='+server+';\
-# #                             DATABASE='+database+';\
-# #                             UID='+username+';PWD='+password+';')
-#
-#
+
+
+# def database_connection2(server:str='TRONGNHAN', database:str='Plooker'):
+#     '''
+#     call this function to connect to database
+#     this function return pyodbc.connect
+#     '''
+#     return pyodbc.connect('DRIVER={SQL Server};\
+#                             SERVER='+server+';\
+#                             DATABASE='+database+';\
+#                             UID='+username+';PWD='+password+';')
+
+
 # def database_connection2(server: str = "localhost", database: str = "Caucheez"):
 #     """
 #     call this function to connect to database
@@ -67,55 +72,8 @@ firebase_admin.initialize_app(cred)
 #         + ";\
 #                             Trusted_Connection=yes;"
 #     )
-#
-#
-# """
-# class <classname>(BaseModel):
-#     <variable>: <type> = <value>
-# """
-#
-#
-# #               STRUCTURE DEFINE
-# class AccountInfo(BaseModel):
-#     userID: str = "123456"
-#     username: str = "ltnhan"
-#     password: str = "Nhan123@"
-#     created_at: str = "01-01-2000"
-#
-#
-class UserInfo(BaseModel):
-    userID: str = "123456"
-    fname: str = "Le"
-    lname: str = "Nhan"
-    email: str = "ltnhan@gmail.com"
-    phone: str = "0123456789"
-    dob: str = "01-01-2000"
-    country: str = "Vietnam"
-    gender: bool = 0  # 0 male, 1 female
-    role: bool = 0  # 0 mentee, 1 mentor
 
 
-# class MentorInfo(BaseModel):
-#     mentorID: str = "123456"
-#     fieldID: str = "123456"
-#     language: str = "English"
-#     description: str = "Hello"
-#     rating: float = 1.5
-#
-#
-# class Field(BaseModel):
-#     fieldID: str = "123456"
-#     fieldName: str = "business"
-#
-#
-# class Experience(BaseModel):
-#     userID: str = "123456"
-#     position: str = "CEO"
-#     workplace: str = "Google"
-#     startdate: str = "01-01-2023"
-#     enddate: str = "01-01-2025"
-#
-#
 # #               DATABASE COMMAND
 # class Database:
 #     def __init__(self):
@@ -210,81 +168,81 @@ class UserInfo(BaseModel):
 #         except:
 #             return "FAIL TO SIGN UP"
 #         return "SUCCESS"
-#
-#
-# """
-#     def root(self, data:str) -> list:
-#         command = 'EXEC findTable \'' + data.lower() + '\''
-#         self.cursor.execute(command)
-#         result = []
-#         for i in self.cursor:
-#             result.append([x for x in i])
-#         return result
-#
-#     def changeUserInfo(self, user: UserInfo):
-#         command = "EXEC changeUserInfo '%s'" % (user.userid, user.Name, user.usename, user.userPhone, user.userMail, user.userPWD, 1 if user.gender else 0, user.dob, user.userAddress)
-#         try:
-#             self.cursor.execute(command)
-#             self.conn.commit()
-#         except:
-#             return 'FAIL'
-#         return 'SUCCESS'
-#
-#     #sign up
-#     def signup(self, user: AccountInfo) -> str:
-#         id = user.userID
-#         command = 'EXEC sp_AddUsers \''+id+'\', \''+user.Name+'\', \''+user.usename+'\',\''+user.userPhone+'\', \''+user.userMail+'\', \''+user.userPWD+'\','+str(user.gender)+', \''+user.dob+'\', \''+user.userAddress+'\''
-#         try:
-#             self.cursor.execute(command)
-#             self.conn.commit()
-#         except:
-#             return 'FAIL TO SIGN UP'
-#         return 'SUCCESS'
-#
-#     def login(self, username:str, password:str) -> str:
-#         #return username
-#         command = 'EXEC sp_checkLogIn \''+username+'\', \''+password+'\''
-#         try:
-#             result = ''
-#             self.cursor.execute(command)
-#             print("hello")
-#             for i in self.cursor:
-#                 result += i[0]
-#         except:
-#             return 'SOME ERRORS OCCUR'
-#
-#         if result != 'None':
-#             return result
-#         else: return 'FAIL'
-#
-#     def all(self):
-#         command = 'EXEC SearchAll'
-#         try:
-#             self.cursor.execute(command)
-#             result = []
-#             for i in self.cursor:
-#                 result.append([e for e in i])
-#             return result
-#         except:
-#             return 'FAIL'
-#
-#     def getUserInfo(self, id:dict):
-#         id = id['id']
-#         command = "EXEC getUserInfo '"+id+"'"
-#         try:
-#             self.cursor.execute(command)
-#             result = 0
-#             for i in self.cursor:
-#                 result = [e for e in i]
-#             return result
-#         except:
-#             return 'NO USER'
-# """
+
+
+"""
+    def root(self, data:str) -> list:
+        command = 'EXEC findTable \'' + data.lower() + '\''
+        self.cursor.execute(command)
+        result = []
+        for i in self.cursor:
+            result.append([x for x in i])
+        return result
+
+    def changeUserInfo(self, user: UserInfo):
+        command = "EXEC changeUserInfo '%s'" % (user.userid, user.Name, user.usename, user.userPhone, user.userMail, user.userPWD, 1 if user.gender else 0, user.dob, user.userAddress)
+        try:
+            self.cursor.execute(command)
+            self.conn.commit()
+        except:
+            return 'FAIL'
+        return 'SUCCESS'
+
+    #sign up
+    def signup(self, user: AccountInfo) -> str:
+        id = user.userID
+        command = 'EXEC sp_AddUsers \''+id+'\', \''+user.Name+'\', \''+user.usename+'\',\''+user.userPhone+'\', \''+user.userMail+'\', \''+user.userPWD+'\','+str(user.gender)+', \''+user.dob+'\', \''+user.userAddress+'\''
+        try:
+            self.cursor.execute(command)
+            self.conn.commit()
+        except:
+            return 'FAIL TO SIGN UP'
+        return 'SUCCESS'
+
+    def login(self, username:str, password:str) -> str:
+        #return username
+        command = 'EXEC sp_checkLogIn \''+username+'\', \''+password+'\''
+        try:
+            result = ''
+            self.cursor.execute(command)
+            print("hello")
+            for i in self.cursor:
+                result += i[0]
+        except:
+            return 'SOME ERRORS OCCUR'
+
+        if result != 'None':
+            return result
+        else: return 'FAIL'
+
+    def all(self):
+        command = 'EXEC SearchAll'
+        try:
+            self.cursor.execute(command)
+            result = []
+            for i in self.cursor:
+                result.append([e for e in i])
+            return result
+        except:
+            return 'FAIL'
+
+    def getUserInfo(self, id:dict):
+        id = id['id']
+        command = "EXEC getUserInfo '"+id+"'"
+        try:
+            self.cursor.execute(command)
+            result = 0
+            for i in self.cursor:
+                result = [e for e in i]
+            return result
+        except:
+            return 'NO USER'
+"""
 ###################################################################################################################
 #           MAIN PART
 ###################################################################################################################
 app = FastAPI()
-# database = Database()
+database = Database()
 
 origins = ["*"]
 
@@ -304,7 +262,15 @@ async def check():
 
 
 @app.post("/sign_up", tags=["account"])
-async def sign_up(account: UserInfo) -> str:
+async def sign_up(account: models.SignUpSchema) -> str:
+    try:
+        uid = database.create_new_account(account.email, account.password)
+        return JSONResponse(content={"success": "true", "data": {"uid": uid}})
+    except Exception as e:
+        return JSONResponse(
+            content={"success": "failed", "data": {"message": f"Error: {str(e)}"}}
+        )
+
     """
     RETURN 'SUCCESS' IF SUCCESSFULLY SIGN UP USER
     IF ERROR OCCUR THEN RETURN 'FAIL TO SIGN UP'
