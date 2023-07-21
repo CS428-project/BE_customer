@@ -294,8 +294,16 @@ async def sign_up(account: models.SignUpSchema) -> str:
 
 # login
 @app.post("/login", tags=["account"])
-async def login(userinput: dict) -> str:
-    username = userinput["user_name"]
-    password = userinput["password"]
+async def login(payload: models.SignUpSchema) -> str:
+    try:
+        user_info = database.login(payload.email, payload.password)
+        return JSONResponse(
+            content={"success": "true", "data": {"user_info": user_info}}
+        )
+    except Exception as e:
+        return JSONResponse(
+            content={"success": "failed", "data": {"message": f"Error: {str(e)}"}}
+        )
+
     return ""
     # return database.login(username, password)
