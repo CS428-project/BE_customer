@@ -264,7 +264,7 @@ async def check():
 @app.post("/sign_up", tags=["account"])
 async def sign_up(account: models.SignUpSchema) -> str:
     try:
-        uid = database.create_new_account(account.email, account.password, 0)
+        uid = database.create_new_account(account.email, account.password, False)
         return JSONResponse(content={"success": "true", "data": {"uid": uid}})
     except Exception as e:
         return JSONResponse(
