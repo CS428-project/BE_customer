@@ -1,7 +1,7 @@
 from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
 from fastapi.responses import JSONResponse
-
+import pyodbc
 import models
 from database import Database
 
@@ -20,30 +20,21 @@ image_path = "./image/"
 
 
 #               CONNECTION TO DATABASE
-# def database_connection(
-#     server: str = "localhost",
-#     database: str = "Caucheez",
-#     username: str = "sa",
-#     password: str = "12345@bcdE",
-# ):
+def database_connection(
+    server: str = "mssql-138433-0.cloudclusters.net",
+    database: str = "eCommerce",
+    username: str = "Admin",
+    password: str = "Admin123",
+):
 #     """
 #     call this function to connect to database
 #     this function return pyodbc.connect
 #     """
-#     return pyodbc.connect(
-#         "DRIVER={ODBC Driver 17 for SQL Server};\
-#                             SERVER="
-#         + server
-#         + ";\
-#                             DATABASE="
-#         + database
-#         + ";\
-#                             UID="
-#         + username
-#         + ";PWD="
-#         + password
-#         + ";"
-#     )
+    return pyodbc.connect(
+            "DRIVER={ODBC Driver 17 for SQL Server};\
+            SERVER="+ server+ ";\
+            DATABASE="+ database+ ";\
+            UID="+ username+ ";PWD="+ password+ ";")
 
 
 # def database_connection2(server:str='TRONGNHAN', database:str='Plooker'):
