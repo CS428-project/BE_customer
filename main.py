@@ -1,6 +1,8 @@
 from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
 from fastapi.responses import JSONResponse
+
+import json
 import pyodbc
 import models
 from database import Database
@@ -70,7 +72,6 @@ class Database:
         result = []
         for i in self.cursor:
             result.append([x for x in i])
-        print(result)
         return result
 
     # check Login Information
@@ -113,75 +114,42 @@ class Database:
             return "FAIL TO SIGN UP"
         return "SUCCESS"
 
-
-"""
-    def root(self, data:str) -> list:
-        command = 'EXEC findTable \'' + data.lower() + '\''
-        self.cursor.execute(command)
+    #booking
+    def booking(self, menteeid: int, mentorid: int) -> str:
+        command = "EXEC sp_booking '" + menteeid + "', '" + mentorid + "'"
+        try:
+            result = ""
+            self.cursor.execute(command)
+            for i in self.cursor:
+                result += i[0]
+            self.conn.commit()
+        except:
+            return "SOME ERRORS OCCUR"
+        return "SUCCESS"
+    
+    # get search - input: keyword, output: mentor profile containing that keyword
+    def getMenteeBooking(self, menteeid: str) -> list:
+        command = "EXEC sp_getMenteeBooking '%s'" % (menteeid)
+        try:
+            self.cursor.execute(command)
+        except:
+            return "SOME ERROR OCCUR"
         result = []
         for i in self.cursor:
             result.append([x for x in i])
         return result
-
-    def changeUserInfo(self, user: UserInfo):
-        command = "EXEC changeUserInfo '%s'" % (user.userid, user.Name, user.usename, user.userPhone, user.userMail, user.userPWD, 1 if user.gender else 0, user.dob, user.userAddress)
+    
+    # get search - input: keyword, output: mentor profile containing that keyword
+    def getMentorBooking(self, mentorid: str) -> list:
+        command = "EXEC sp_getMentorBooking '%s'" % (mentorid)
         try:
             self.cursor.execute(command)
-            self.conn.commit()
         except:
-            return 'FAIL'
-        return 'SUCCESS'
-
-    #sign up
-    def signup(self, user: AccountInfo) -> str:
-        id = user.userID
-        command = 'EXEC sp_AddUsers \''+id+'\', \''+user.Name+'\', \''+user.usename+'\',\''+user.userPhone+'\', \''+user.userMail+'\', \''+user.userPWD+'\','+str(user.gender)+', \''+user.dob+'\', \''+user.userAddress+'\''
-        try:
-            self.cursor.execute(command)
-            self.conn.commit()
-        except:
-            return 'FAIL TO SIGN UP'
-        return 'SUCCESS'
-
-    def login(self, username:str, password:str) -> str:
-        #return username
-        command = 'EXEC sp_checkLogIn \''+username+'\', \''+password+'\''
-        try:
-            result = ''
-            self.cursor.execute(command)
-            print("hello")
-            for i in self.cursor:
-                result += i[0]
-        except:
-            return 'SOME ERRORS OCCUR'
-
-        if result != 'None':
-            return result
-        else: return 'FAIL'
-
-    def all(self):
-        command = 'EXEC SearchAll'
-        try:
-            self.cursor.execute(command)
-            result = []
-            for i in self.cursor:
-                result.append([e for e in i])
-            return result
-        except:
-            return 'FAIL'
-
-    def getUserInfo(self, id:dict):
-        id = id['id']
-        command = "EXEC getUserInfo '"+id+"'"
-        try:
-            self.cursor.execute(command)
-            result = 0
-            for i in self.cursor:
-                result = [e for e in i]
-            return result
-        except:
-            return 'NO USER'
-"""
+            return "SOME ERROR OCCUR"
+        result = []
+        for i in self.cursor:
+            result.append([x for x in i])
+        return result
 ###################################################################################################################
 #           MAIN PART
 ###################################################################################################################
@@ -204,14 +172,18 @@ app.add_middleware(
 async def check():
     return ["this note tell you that you successfully connect to the api"]
 
-#find pet
-@app.get('/searchresults', tags=['Search Results'])
+#
+#fake_items_db = [{"item_name": "Foo"}, {"item_name": "Bar"}, {"item_name": "Baz"}]
+@app.get('/searchresults/{id}', tags=['Search Results'])
 async def searchResults(keyword:str):
     '''return list as a result of matching information'''
-    keyword="English"
     return database.getSearchResult(keyword)
+print(database.getSearchResult("English"))
+#async def read_item(skip: int = 0, limit: int = 10):
+#    return fake_items_db[skip : skip + limit]
 
-database.getSearchResult("English")
+
+
 """
 @app.post("/sign_up", tags=["account"])
 async def sign_up(account: models.SignUpSchema) -> str:
