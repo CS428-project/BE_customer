@@ -51,7 +51,7 @@ class Database:
         return result
 
     # get Mentor by Field - display all the mentor in that field
-    def getMentorByFeild(self, data: models.Field) -> list:
+    def getMentorByField(self, data: models.Field) -> list:
         command = "EXEC sp_getMentorByFeild '%s'" % (data.fieldName)
         try:
             self.cursor.execute(command)
@@ -115,8 +115,8 @@ class Database:
         return "SUCCESS"
 
     #booking
-    def booking(self, menteeid: int, mentorid: int) -> str:
-        command = "EXEC sp_booking '" + menteeid + "', '" + mentorid + "'"
+    def booking(self, info: models.Booking) -> str:
+        command = "EXEC sp_booking '%s', '%s', '%s', '%s', '%s', '%s'" (info.ID, info.mentorID, info.menteeID, info.book_at, info.time, info.status)
         try:
             result = ""
             self.cursor.execute(command)
@@ -127,7 +127,9 @@ class Database:
             return "SOME ERRORS OCCUR"
         return "SUCCESS"
     
-    # get search - input: keyword, output: mentor profile containing that keyword
+    
+    
+    # get mentee booking
     def getMenteeBooking(self, menteeid: str) -> list:
         command = "EXEC sp_getMenteeBooking '%s'" % (menteeid)
         try:
@@ -139,9 +141,9 @@ class Database:
             result.append([x for x in i])
         return result
     
-    # get search - input: keyword, output: mentor profile containing that keyword
-    def getMentorBooking(self, mentorid: str) -> list:
-        command = "EXEC sp_getMentorBooking '%s'" % (mentorid)
+    # put mentor booking (insert available sessions can be booked)
+    def putMentorBooking(self, mentorid: str) -> list:
+        command = "EXEC sp_putMentorBooking '%s', '%s', '%s'" % (mentorid)
         try:
             self.cursor.execute(command)
         except:
@@ -150,6 +152,9 @@ class Database:
         for i in self.cursor:
             result.append([x for x in i])
         return result
+    
+
+
 ###################################################################################################################
 #           MAIN PART
 ###################################################################################################################
@@ -172,17 +177,11 @@ app.add_middleware(
 async def check():
     return ["this note tell you that you successfully connect to the api"]
 
-#
-#fake_items_db = [{"item_name": "Foo"}, {"item_name": "Bar"}, {"item_name": "Baz"}]
+#search
 @app.get('/searchresults/{id}', tags=['Search Results'])
 async def searchResults(keyword:str):
     '''return list as a result of matching information'''
     return database.getSearchResult(keyword)
-print(database.getSearchResult("English"))
-#async def read_item(skip: int = 0, limit: int = 10):
-#    return fake_items_db[skip : skip + limit]
-
-
 
 """
 @app.post("/sign_up", tags=["account"])
