@@ -2,7 +2,6 @@ from fastapi import FastAPI, HTTPException
 from fastapi.middleware.cors import CORSMiddleware
 from fastapi.responses import JSONResponse
 
-import json
 import pyodbc
 import models
 from database import Database
@@ -185,7 +184,7 @@ async def searchResults(keyword:str):
 bookings_db = []
 
 # API endpoint to create a booking
-@app.post("/bookings/", response_model=Booking)
+@app.post("/bookings/", response_model=models.Booking)
 def create_booking(booking: models.Booking):
     booking.id = str(1)
     bookings_db.append(booking.dict())
