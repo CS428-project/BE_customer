@@ -142,16 +142,15 @@ class Database:
         return result
     
     # put mentor booking (insert available sessions can be booked)
-    def putMentorBooking(self, mentorid: str) -> list:
-        command = "EXEC sp_putMentorBooking '%s', '%s', '%s'" % (mentorid)
+    def putMentorBooking(self, booking:models.Booking) -> list:
+        command = "EXEC sp_putMentorBooking '%s', '%s', '%s', '%s'" % (booking.mentorID, booking.menteeID, booking.book_at, booking.time)
         try:
             self.cursor.execute(command)
+            self.conn.commit()
+            return "BOOKING SUCCESSFULLY"
         except:
             return "SOME ERROR OCCUR"
-        result = []
-        for i in self.cursor:
-            result.append([x for x in i])
-        return result
+
     
 
 
@@ -183,51 +182,45 @@ async def searchResults(keyword:str):
     '''return list as a result of matching information'''
     return database.getSearchResult(keyword)
 
-"""
-@app.post("/sign_up", tags=["account"])
-async def sign_up(account: models.SignUpSchema) -> str:
-    try:
-        uid = database.create_new_account(account.email, account.password, False)
-        return JSONResponse(content={"success": "true", "data": {"uid": uid}})
-    except Exception as e:
-        return JSONResponse(
-            content={"success": "failed", "data": {"message": f"Error: {str(e)}"}}
-        )
+bookings_db = []
 
-    
-    RETURN 'SUCCESS' IF SUCCESSFULLY SIGN UP USER
-    IF ERROR OCCUR THEN RETURN 'FAIL TO SIGN UP'
+# API endpoint to create a booking
+@app.post("/bookings/", response_model=Booking)
+def create_booking(booking: models.Booking):
+    booking.id = str(1)
+    bookings_db.append(booking.dict())
+    return booking
 
-    example input:
-    {
-    "userid": "string",
-    "Name": "Name",
-    "usename": "testUser",
-    "userPhone": "0912345678",
-    "userMail": "gmail@gmail.com",
-    "userPWD": "123",
-    "gender": 0,
-    "dob": "1-1-2000",
-    "userAddress": "HCMC"
-    }
-    
-    # return database.signup(account)
-    return ""
+# API endpoint to get the list of bookings for a specific customer (mentee)
+@app.get("/bookings/customer/{customer_id}")
+def get_bookings_by_customer(customer_id: str):
+    customer_bookings = [booking for booking in bookings_db if booking["menteeID"] == customer_id]
+    if not customer_bookings:
+        raise HTTPException(status_code=404, detail="No bookings found for this customer")
+    return customer_bookings
 
+# API endpoint to get the list of bookings for a specific mentor (tutor)
+@app.get("/bookings/mentor/{mentor_id}")
+def get_bookings_by_mentor(mentor_id: str):
+    mentor_bookings = [booking for booking in bookings_db if booking["mentorID"] == mentor_id]
+    if not mentor_bookings:
+        raise HTTPException(status_code=404, detail="No bookings found for this mentor")
+    return mentor_bookings
 
-# login
-@app.post("/login", tags=["account"])
-async def login(payload: models.SignUpSchema) -> str:
-    try:
-        user_info = database.login(payload.email, payload.password)
-        return JSONResponse(
-            content={"success": "true", "data": {"user_info": user_info}}
-        )
-    except Exception as e:
-        return JSONResponse(
-            content={"success": "failed", "data": {"message": f"Error: {str(e)}"}}
-        )
+# API endpoint to get the details of a specific booking
+@app.get("/bookings/{booking_id}")
+def get_booking(booking_id: str):
+    booking = next((booking for booking in bookings_db if booking["ID"] == booking_id), None)
+    if booking is None:
+        raise HTTPException(status_code=404, detail="Booking not found")
+    return booking
 
-    return ""
-    # return database.login(username, password)
-"""
+# API endpoint to update the details of a specific booking by mentor
+@app.put("/bookings/{booking_id}", response_model=models.Booking)
+def update_booking_by_mentor(booking_id: str, updated_booking: models.Booking):
+    booking_index = next((index for index, booking in enumerate(bookings_db) if booking["ID"] == booking_id), None)
+    if booking_index is None:
+        raise HTTPException(status_code=404, detail="Booking not found")
+    updated_booking.id = booking_id
+    bookings_db[booking_index] = updated_booking.dict()
+    return bookings_db[booking_index]
