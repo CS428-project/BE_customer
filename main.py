@@ -1,153 +1,108 @@
-from fastapi import FastAPI
+from fastapi import FastAPI, HTTPException
 from fastapi.middleware.cors import CORSMiddleware
+from fastapi.responses import JSONResponse
+
+import json
 import pyodbc
-from pydantic import BaseModel
-from fastapi.middleware.cors import CORSMiddleware
-image_path = './image/'
+import models
+from database import Database
+
+image_path = "./image/"
 
 
 #               CONNECTION TO DATABASE
-def database_connection(server:str='localhost', database:str='Caucheez', username:str='sa', password:str='12345@bcdE'):
-    '''
-    call this function to connect to database
-    this function return pyodbc.connect 
-    '''
-    return pyodbc.connect('DRIVER={ODBC Driver 17 for SQL Server};\
-                            SERVER='+server+';\
-                            DATABASE='+database+';\
-                            UID='+username+';PWD='+password+';')
-
-# def database_connection2(server:str='TRONGNHAN', database:str='Plooker'):
-#     '''
+def database_connection():
+#     """
 #     call this function to connect to database
-#     this function return pyodbc.connect 
-#     '''
-#     return pyodbc.connect('DRIVER={SQL Server};\
-#                             SERVER='+server+';\
-#                             DATABASE='+database+';\
-#                             UID='+username+';PWD='+password+';')
+#     this function return pyodbc.connect
+#     """
+    return pyodbc.connect('DRIVER={SQL Server};SERVER=mssql-138433-0.cloudclusters.net,18705;PORT=18705;DATABASE=eCommerce;UID=Admin;PWD=Admin123')
 
-def database_connection2(server:str='localhost', database:str='Caucheez'):
-    '''
-    call this function to connect to database
-    this function return pyodbc.connect
-    '''
-    return pyodbc.connect('DRIVER={SQL Server};\
-                            SERVER='+server+';\
-                            DATABASE='+database+';\
-                            Trusted_Connection=yes;')
-
-'''
-class <classname>(BaseModel):
-    <variable>: <type> = <value>
-'''
-#               STRUCTURE DEFINE
-class AccountInfo(BaseModel):
-    userID: str = '123456'
-    username: str = 'ltnhan'
-    password: str = 'Nhan123@'
-    created_at: str = '01-01-2000'
-
-class UserInfo(BaseModel):
-    userID: str = '123456'
-    fname: str = 'Le'
-    lname: str = 'Nhan'
-    email: str = 'ltnhan@gmail.com'
-    phone: str = '0123456789'
-    dob: str = '01-01-2000'
-    country: str = 'Vietnam'
-    gender: bool = 0 #0 male, 1 female
-    role: bool = 0 #0 mentee, 1 mentor
-
-class MentorInfo(BaseModel):
-    mentorID: str = '123456'
-    fieldID: str = '123456'
-    language: str = 'English'
-    description: str = 'Hello'
-    rating: float = 1.5
-
-class Field(BaseModel):
-    fieldID: str = '123456'
-    fieldName: str = 'business'
-
-class Experience(BaseModel):
-    userID: str = '123456'
-    position: str = 'CEO'
-    workplace: str = 'Google'
-    startdate: str = '01-01-2023'
-    enddate: str = '01-01-2025'
 
 #               DATABASE COMMAND
 class Database:
     def __init__(self):
-        self.conn = database_connection2()
+        self.conn = database_connection()
         self.cursor = self.conn.cursor()
         pass
-
-    #get Mentor Info by Rating - display mentor info, sort in descending order of rating
-    def getMentorInfoByRating(self, data: MentorInfo) -> list:
+ 
+    # get Mentor Info by Rating - display mentor info, sort in descending order of rating
+    def getMentorInfoByRating(self, data: models.MentorInfo) -> list:
         command = "EXEC sp_getMentorInfoByRating"
         try:
             self.cursor.execute(command)
         except:
-            return 'SOME ERROR OCCUR'
-        result = []
-        for i in self.cursor:
-            result.append([x for x in i])
-        return result
-    
-    #get Field - display field name and number of mentor in each field, sort in descending order
-    def getFeild(self, data: Field) -> list:
-        command = "EXEC sp_getFeild " 
-        try:
-            self.cursor.execute(command)
-        except:
-            return 'SOME ERROR OCCUR'
-        result = []
-        for i in self.cursor:
-            result.append([x for x in i])
-        return result
-    
-    #get Mentor by Field - display all the mentor in that field
-    def getMentorByFeild(self, data: Field) -> list:
-        command = "EXEC sp_getMentorByFeild '%s'" % (data.fieldName)
-        try:
-            self.cursor.execute(command)
-        except:
-            return 'SOME ERROR OCCUR'
+            return "SOME ERROR OCCUR"
         result = []
         for i in self.cursor:
             result.append([x for x in i])
         return result
 
-    #get search - input: keyword, output: mentor profile containing that keyword
-    def getSearchResult(self, data) -> list:
-        command = "EXEC sp_search '%s'" % (data)
+    # get Field - display field name and number of mentor in each field, sort in descending order
+    def getFeild(self) -> list:
+        command = "EXEC sp_getFeild "
         try:
             self.cursor.execute(command)
         except:
-            return 'SOME ERROR OCCUR'
+            return "SOME ERROR OCCUR"
         result = []
         for i in self.cursor:
             result.append([x for x in i])
         return result
-    
-    #check Login Information
-    def checkLogin(self, username:str, password:str) -> str:
-        command = 'EXEC sp_checkLogin \''+username+'\', \''+password+'\''
+
+    # get Mentor by Field - display all the mentor in that field
+    def getMentorByField(self, data: models.Field) -> list:
+        command = "EXEC sp_getMentorByFeild '%s'" % (data.fieldName)
         try:
-            result = ''
+            self.cursor.execute(command)
+        except:
+            return "SOME ERROR OCCUR"
+        result = []
+        for i in self.cursor:
+            result.append([x for x in i])
+        return result
+
+    # get search - input: keyword, output: mentor profile containing that keyword
+    def getSearchResult(self, keyword: str) -> list:
+        command = "EXEC sp_Search '%s'" % (keyword)
+        try:
+            self.cursor.execute(command)
+        except:
+            return "SOME ERROR OCCUR"
+        result = []
+        for i in self.cursor:
+            result.append([x for x in i])
+        return result
+
+    # check Login Information
+    def checkLogin(self, username: str, password: str) -> str:
+        command = "EXEC sp_checkLogin '" + username + "', '" + password + "'"
+        try:
+            result = ""
             self.cursor.execute(command)
             print("hello")
             for i in self.cursor:
                 result += i[0]
+            return result
         except:
-            return 'SOME ERRORS OCCUR'
-        
-    #sign up
-    def signup(self, account: AccountInfo, user: UserInfo) -> str:
-        command_addaccount = "EXEC sp_AddAccount '%s', '%s', '%s'" % (account.username, account.password)
-        command_adduser = "EXEC sp_AddUser '%s', '%s', '%s', '%s', '%s', '%s', '%b'" % (user.fname, user.lname, user.email, user.phone, user.dob, user.country, user.gender, "Mentee")
+            return "SOME ERRORS OCCUR"
+
+    # sign up
+    def signup(self, account: models.AccountInfo, user: models.UserInfo) -> str:
+        command_addaccount = "EXEC sp_AddAccount '%s', '%s', '%s'" % (
+            account.username,
+            account.password,
+        )
+        command_adduser = "EXEC sp_AddUser '%s', '%s', '%s', '%s', '%s', '%s', '%b'" % (
+            user.fname,
+            user.lname,
+            user.email,
+            user.phone,
+            user.dob,
+            user.country,
+            user.gender,
+            "Mentee",
+        )
         try:
             self.cursor.execute(command_addaccount)
             id = []
@@ -156,33 +111,90 @@ class Database:
             self.cursor.execute(command_adduser)
             self.conn.commit()
         except:
-            return 'FAIL TO SIGN UP'
-        return 'SUCCESS'
+            return "FAIL TO SIGN UP"
+        return "SUCCESS"
+
+    #booking
+    def booking(self, info: models.Booking) -> str:
+        command = "EXEC sp_booking '%s', '%s', '%s', '%s', '%s', '%s'" (info.ID, info.mentorID, info.menteeID, info.book_at, info.time, info.status)
+        try:
+            result = ""
+            self.cursor.execute(command)
+            for i in self.cursor:
+                result += i[0]
+            self.conn.commit()
+        except:
+            return "SOME ERRORS OCCUR"
+        return "SUCCESS"
+    
+    
+    
+    # get mentee booking
+    def getMenteeBooking(self, menteeid: str) -> list:
+        command = "EXEC sp_getMenteeBooking '%s'" % (menteeid)
+        try:
+            self.cursor.execute(command)
+        except:
+            return "SOME ERROR OCCUR"
+        result = []
+        for i in self.cursor:
+            result.append([x for x in i])
+        return result
+    
+    # put mentor booking (insert available sessions can be booked)
+    def putMentorBooking(self, mentorid: str) -> list:
+        command = "EXEC sp_putMentorBooking '%s', '%s', '%s'" % (mentorid)
+        try:
+            self.cursor.execute(command)
+        except:
+            return "SOME ERROR OCCUR"
+        result = []
+        for i in self.cursor:
+            result.append([x for x in i])
+        return result
+    
+
 
 ###################################################################################################################
-#           MAIN PART   
+#           MAIN PART
 ###################################################################################################################
 app = FastAPI()
 database = Database()
 
-origins = ['*']
+origins = ["*"]
 
 app.add_middleware(
     CORSMiddleware,
     allow_origins=["*"],
     allow_credentials=True,
     allow_methods=["*"],
-    allow_headers=["*"]
+    allow_headers=["*"],
 )
 
-#sign up
-@app.get('/')
-async def check():
-    return ['this note tell you that you successfully connect to the api']
 
-@app.post('/sign_up', tags=['account'])
-async def sign_up(account:UserInfo) -> str:
-    '''
+# sign up
+@app.get("/")
+async def check():
+    return ["this note tell you that you successfully connect to the api"]
+
+#search
+@app.get('/searchresults/{id}', tags=['Search Results'])
+async def searchResults(keyword:str):
+    '''return list as a result of matching information'''
+    return database.getSearchResult(keyword)
+
+"""
+@app.post("/sign_up", tags=["account"])
+async def sign_up(account: models.SignUpSchema) -> str:
+    try:
+        uid = database.create_new_account(account.email, account.password, False)
+        return JSONResponse(content={"success": "true", "data": {"uid": uid}})
+    except Exception as e:
+        return JSONResponse(
+            content={"success": "failed", "data": {"message": f"Error: {str(e)}"}}
+        )
+
+    
     RETURN 'SUCCESS' IF SUCCESSFULLY SIGN UP USER
     IF ERROR OCCUR THEN RETURN 'FAIL TO SIGN UP'
 
@@ -198,12 +210,24 @@ async def sign_up(account:UserInfo) -> str:
     "dob": "1-1-2000",
     "userAddress": "HCMC"
     }
-    '''
-    return database.signup(account)
     
-#login
-@app.post('/login', tags=['account'])
-async def login(userinput:dict) -> str:
-    username = userinput['user_name']
-    password = userinput['password']
-    return database.login(username,password)
+    # return database.signup(account)
+    return ""
+
+
+# login
+@app.post("/login", tags=["account"])
+async def login(payload: models.SignUpSchema) -> str:
+    try:
+        user_info = database.login(payload.email, payload.password)
+        return JSONResponse(
+            content={"success": "true", "data": {"user_info": user_info}}
+        )
+    except Exception as e:
+        return JSONResponse(
+            content={"success": "failed", "data": {"message": f"Error: {str(e)}"}}
+        )
+
+    return ""
+    # return database.login(username, password)
+"""
