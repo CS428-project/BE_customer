@@ -4,7 +4,7 @@ from fastapi.responses import JSONResponse
 
 import pyodbc
 import models
-from database import Database
+# from database import Database
 
 image_path = "./image/"
 
@@ -115,7 +115,7 @@ class Database:
 
     #booking
     def booking(self, info: models.Booking) -> str:
-        command = "EXEC sp_booking '%s', '%s', '%s', '%s', '%s', '%s'" (info.ID, info.mentorID, info.menteeID, info.book_at, info.time, info.status)
+        command = "EXEC sp_booking '%s', '%s', '%s', '%s', '%s', '%s'" % (info.ID, info.mentorID, info.menteeID, info.book_at, info.time, info.status)
         try:
             result = ""
             self.cursor.execute(command)
@@ -223,3 +223,6 @@ def update_booking_by_mentor(booking_id: str, updated_booking: models.Booking):
     updated_booking.id = booking_id
     bookings_db[booking_index] = updated_booking.dict()
     return bookings_db[booking_index]
+
+
+#uvicorn main:app --host localhost --port 8000
