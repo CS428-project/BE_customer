@@ -38,7 +38,7 @@ class Database:
         return result
 
     # get Field - display field name and number of mentor in each field, sort in descending order
-    def getFeild(self) -> list:
+    def getField(self) -> list:
         command = "EXEC sp_getFeild "
         try:
             self.cursor.execute(command)
