@@ -15,7 +15,14 @@ def database_connection():
 #     call this function to connect to database
 #     this function return pyodbc.connect
 #     """
-    return pyodbc.connect('DRIVER={SQL Server};SERVER=mssql-138433-0.cloudclusters.net,18705;PORT=18705;DATABASE=eCommerce;UID=Admin;PWD=Admin123')
+    return pyodbc.connect(
+            "DRIVER={ODBC Driver 17 for SQL Server};"
+            "SERVER=mssql-138433-0.cloudclusters.net,18705;"
+            "PORT=18705;"
+            "DATABASE=eCommerce;"
+            "UID=Admin;"
+            "PWD=Admin123"
+    )
 
 
 #               DATABASE COMMAND
