@@ -7,6 +7,10 @@ class <classname>(BaseModel):
 
 
 #               STRUCTURE DEFINE
+class UserIn(BaseModel):
+    username: str
+    password: str
+
 class SignUpSchema(BaseModel):
     email: str
     password: str
