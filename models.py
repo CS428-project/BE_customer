@@ -52,8 +52,8 @@ class Experience(BaseModel):
     userID: str = "123456"
     position: str = "CEO"
     workplace: str = "Google"
-    startdate: str = "01-01-2023"
-    enddate: str = "01-01-2025"
+    old_job: str
+    years_experience: int
 
 class Booking(BaseModel):
     ID: str = "123456"
@@ -61,4 +61,23 @@ class Booking(BaseModel):
     menteeID: str = "123456"
     book_at: str = "01-01-2023"
     time: str = "07:59"
-    status: str = "0"
+    duration: float
+    status: str  # 'Completed', 'Confirmed', 'Pending', 'Canceled'
+    paymentID: int
+    cost: float
+
+class Services(BaseModel):
+    mentorID: int
+    Cost_dollar_in_hour: float
+    FieldID: int
+    Information: str
+    work_time: str
+
+class Feedback(BaseModel):
+    BookingID: int
+    feedback: str
+    rate: float
+
+class Payment(BaseModel):
+    ID: int
+    method: str

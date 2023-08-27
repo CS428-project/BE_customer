@@ -14,7 +14,7 @@ def database_connection():
             "PWD=Admin123"
     )
 
-
+import models
 #               DATABASE COMMAND
 class Database:
     def __init__(self):
@@ -112,7 +112,7 @@ class Database:
 
     #booking
     def postBooking(self, info: models.Booking) -> str:
-        command = "EXEC sp_postBooking '%s', '%s', '%s', '%s', '%s', '%s'" % (info.ID, info.mentorID, info.menteeID, info.book_at, info.time, info.status)
+        command = "EXEC sp_InsertBooking '%s', '%s', '%s', '%s', '%s', '%s'" % (info.mentorID, info.menteeID, info.book_at, info.time, info.status, info.duration, info.status,info.paymentID)
         try:
             result = ""
             self.cursor.execute(command)
