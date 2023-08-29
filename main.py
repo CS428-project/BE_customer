@@ -3,7 +3,7 @@ from fastapi.middleware.cors import CORSMiddleware
 from fastapi.responses import JSONResponse
 from passlib.context import CryptContext
 
-import pyodbc
+
 import models
 from database import Database
 
@@ -41,7 +41,7 @@ async def check():
 @app.post("/login")
 async def check():
     return ["this note tell you that you successfully connect to the api"]
-
+'''
 @app.post("/signup")
 async def signup(user: models.UserIn, response: Response):
     hashed_password = get_password_hash(user.password)
@@ -50,7 +50,7 @@ async def signup(user: models.UserIn, response: Response):
     token = f"user-{user_id}"  # Create a token (implement more secure way)
     response.set_cookie(key="Authentication", value=token)
     return {"message": "User created successfully"}
-
+'''
 #search
 @app.get('/searchresults/{id}', tags=['Search Results'])
 async def searchResults(keyword:str):
@@ -79,3 +79,4 @@ def update_booking_by_mentor(updated_booking: models.Booking):
 
 
 #uvicorn main:app --host localhost --port 8000
+print(database.getSearchResult('business'))

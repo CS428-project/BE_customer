@@ -1,18 +1,11 @@
-
+import pyodbc
 #               CONNECTION TO DATABASE
 def database_connection():
 #     """
 #     call this function to connect to database
 #     this function return pyodbc.connect
 #     """
-    return pyodbc.connect(
-            "DRIVER={ODBC Driver 17 for SQL Server};"
-            "SERVER=mssql-138433-0.cloudclusters.net,18705;"
-            "PORT=18705;"
-            "DATABASE=eCommerce;"
-            "UID=Admin;"
-            "PWD=Admin123"
-    )
+    return pyodbc.connect('DRIVER={SQL Server};SERVER=mssql-138433-0.cloudclusters.net,18705;PORT=18705;DATABASE=eCommerce;UID=Admin;PWD=Admin123')
 
 import models
 #               DATABASE COMMAND
@@ -23,7 +16,7 @@ class Database:
         pass
  
     # get Mentor Info by Rating - display mentor info, sort in descending order of rating
-    def getMentorInfoByRating(self, data: models.MentorInfo) -> list:
+    def getMentorInfoByRating(self) -> list:
         command = "EXEC sp_getMentorInfoByRating"
         try:
             self.cursor.execute(command)
@@ -36,7 +29,7 @@ class Database:
 
     # get Field - display field name and number of mentor in each field, sort in descending order
     def getField(self) -> list:
-        command = "EXEC sp_getFeild "
+        command = "EXEC sp_getField"
         try:
             self.cursor.execute(command)
         except:
@@ -60,7 +53,7 @@ class Database:
 
     # get search - input: keyword, output: mentor profile containing that keyword
     def getSearchResult(self, keyword: str) -> list:
-        command = "EXEC sp_Search '%s'" % (keyword)
+        command = "EXEC sp_search '%s'" % (keyword)
         try:
             self.cursor.execute(command)
         except:
@@ -151,7 +144,7 @@ class Database:
     
     # put mentor booking (update sessions can be booked)
     def putBooking(self, booking:models.Booking) -> list:
-        command = "EXEC sp_putBooking '%s', '%s', '%s', '%s'" % (booking.mentorID, booking.menteeID, booking.book_at, booking.time)
+        command = "EXEC sp_putBooking '%s', '%s', '%s', '%s', '%s'" % (booking.mentorID, booking.menteeID, booking.book_at, booking.time, booking.status)
         try:
             self.cursor.execute(command)
             self.conn.commit()

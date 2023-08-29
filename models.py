@@ -68,13 +68,13 @@ class Booking(BaseModel):
 
 class Services(BaseModel):
     mentorID: int
-    Cost_dollar_in_hour: float
-    FieldID: int
-    Information: str
+    cost: float
+    fieldID: int
+    information: str
     work_time: str
 
 class Feedback(BaseModel):
-    BookingID: int
+    bookingID: int
     feedback: str
     rate: float
 
